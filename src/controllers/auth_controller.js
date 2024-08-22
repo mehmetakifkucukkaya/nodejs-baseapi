@@ -1,6 +1,7 @@
 const UserModel = require('../models/user_model');
 const bcrypt = require('bcrypt');
 const APIError = require('../utils/errors');
+const Response = require('../utils/response');
 
 const login = async (req, res) => {
   console.log(req.body);
@@ -22,24 +23,16 @@ const register = async (req, res) => {
   console.log(req.body);
   console.log('Hashlenmiş şifre: ', req.body.password);
 
-  try {
-    const newUser = new UserModel(req.body);
+  const newUser = new UserModel(req.body);
 
-    await newUser
-      .save()
-      .then((response) => {
-        return res.status(201).json({
-          success: true,
-          data: response,
-          message: 'Kullanıcı başarıyla oluşturuldu',
-        });
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  } catch (error) {
-    console.log(error);
-  }
+  await newUser
+    .save()
+    .then((data) => {
+      return new Response(data, 'Kullanıcı başarıyla oluşturuldu').created(res);
+    })
+    .catch((err) => {
+      throw new APIError('Kullanıcı oluşturulurken bir hata oluştu !', 400);
+    });
 };
 
 module.exports = {
