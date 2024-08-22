@@ -1,8 +1,10 @@
+require('express-async-errors');
 const express = require('express');
 const app = express();
 require('dotenv').config(); //* .env klasörüne erişebilmesi için gerekli
 require('./src/db/db_connection');
 const port = process.env.PORT || 5001;
+const errorHandlerMiddleware = require('./src/middleware/error_handler');
 
 app.get('/', (req, res) => {
   res.json({
@@ -20,6 +22,10 @@ app.use(
 );
 
 app.use('/api', router);
+
+//* Hata Yakalama
+
+app.use(errorHandlerMiddleware);
 
 app.listen(port, () => {
   console.log(`Server ${port} portunda çalışıyor`);
