@@ -1,8 +1,8 @@
 const jwt = require('jsonwebtoken');
+const APIError = require('../utils/errors');
+const userModel = require('../models/user_model');
 
 const createToken = async (user, res) => {
-  console.log(user);
-
   const payload = {
     sub: user._id,
     name: user.name,
@@ -20,4 +20,51 @@ const createToken = async (user, res) => {
   });
 };
 
-module.exports = createToken;
+const tokenCheck = async (req, res, next) => {
+  try {
+    // console.log('Token Check çalıştı');
+
+    const headerToken =
+      req.headers.authorization &&
+      req.headers.authorization.startsWith('Bearer');
+
+    if (!headerToken) {
+      throw new APIError(
+        'Token bulunamadı - Geçersiz Oturum ! Lütfen oturum açın',
+        401
+      );
+    }
+
+    const token = req.headers.authorization.split(' ')[1]; //* Bearer tokenimiz   -> şeklinde gelen tokeni alıyoruz ve boşluktan itibaren iki parçaya bölüp 1. indexi alıyoruz.  0: Baerer 1: Token
+
+    console.log(token);
+
+    //* token çözümleme işlemi
+    jwt.verify(token, process.env.JWT_SECRET_KEY, async (err, decoded) => {
+      if (err) {
+        return next(new APIError('Token geçersiz ! Lütfen oturum açın', 401));
+      }
+
+      const userInfo = await userModel
+        .findById(decoded.sub)
+        .select('_id name lastName email'); //* sadece bu veriler gelecek
+
+      console.log(userInfo);
+
+      if (!userInfo) {
+        return next(new APIError('Geçersiz token - Kullanıcı bulunamadı', 401));
+      }
+
+      req.user = userInfo; //* kullanıcı varsa req.user'a atıyoruz
+
+      next();
+    });
+  } catch (err) {
+    next(err); // Hataları yakala ve error handling middleware'ine ilet
+  }
+};
+
+module.exports = {
+  createToken,
+  tokenCheck,
+};

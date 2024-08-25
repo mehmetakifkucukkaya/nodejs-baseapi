@@ -2,7 +2,7 @@ const UserModel = require('../models/user_model');
 const bcrypt = require('bcrypt');
 const APIError = require('../utils/errors');
 const Response = require('../utils/response');
-const createToken = require('../middleware/auth');
+const { createToken } = require('../middleware/auth');
 
 const login = async (req, res) => {
   const { email, password } = req.body;
@@ -55,7 +55,14 @@ const register = async (req, res) => {
     });
 };
 
+const me = async (req, res) => {
+  // console.log('me içerisindeyz');
+
+  return new Response(req.user).succes(res);
+};
+
 module.exports = {
   login,
   register,
+  me,
 };
