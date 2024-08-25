@@ -2,12 +2,32 @@ const UserModel = require('../models/user_model');
 const bcrypt = require('bcrypt');
 const APIError = require('../utils/errors');
 const Response = require('../utils/response');
+const createToken = require('../middleware/auth');
 
 const login = async (req, res) => {
-  console.log(req.body);
-  return res.json(req.body);
+  const { email, password } = req.body;
+
+  //* Db'de email ile eşleşen kullanıcı var mı kontrol ediyorz
+  const user = await UserModel.findOne({ email });
+
+  // console.log(user);
+
+  if (!user) {
+    throw new APIError('Email ya da şifre hatalı !', 401);
+  }
+
+  //* Hashlenmiş şifreyi çözümlüyoruz
+  const comparePassword = await bcrypt.compare(password, user.password);
+  console.log(comparePassword);
+
+  if (!comparePassword) {
+    throw new APIError('Email ya da şifre hatalı !', 401);
+  }
+
+  createToken(user, res);
 };
 
+//* Kayıt olma işlemi
 const register = async (req, res) => {
   const { email } = req.body;
 

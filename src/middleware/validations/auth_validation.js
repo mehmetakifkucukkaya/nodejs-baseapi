@@ -52,6 +52,41 @@ class AuthValidation {
     }
     next(); //* ara katman olduğu için işlem bitince devam etmesini sağlar
   };
+
+  //* Giriş işlemi için validation işlemleri
+  static login = async (req, res, next) => {
+    try {
+      await joi
+        .object({
+          email: joi
+            .string()
+            .trim()
+            .email()
+            .min(3)
+            .max(26)
+            .required()
+            .messages({
+              'string.base': 'Email alanı metin tipinde olmalıdır',
+              'string.empty': 'Email alanı boş bırakılamaz',
+              'string.min': 'Email alanı en az 3 karakter olmalıdır',
+              'string.max': 'Email alanı en fazla 26 karakter olmalıdır',
+              'string.email': 'Geçerli bir email adresi giriniz',
+              'string.required': 'Email alanı zorunludur',
+            }),
+          password: joi.string().trim().min(6).max(26).required().messages({
+            'string.base': 'Şifre alanı metin tipinde olmalıdır',
+            'string.empty': 'Şifre alanı boş bırakılamaz',
+            'string.min': 'Şifre alanı en az 6 karakter olmalıdır',
+            'string.max': 'Şifre alanı en fazla 20 karakter olmalıdır',
+            'string.required': 'Şifre alanı zorunludur',
+          }),
+        })
+        .validateAsync(req.body);
+    } catch (error) {
+      throw new APIError(error.details[0].message);
+    }
+    next(); //* ara katman olduğu için işlem bitince devam etmesini sağlar
+  };
 }
 
 module.exports = AuthValidation;
