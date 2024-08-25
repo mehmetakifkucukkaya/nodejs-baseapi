@@ -5,6 +5,7 @@ const Response = require('../utils/response');
 const { createToken } = require('../middleware/auth');
 
 const login = async (req, res) => {
+  console.log('/login');
   const { email, password } = req.body;
 
   //* Db'de email ile eşleşen kullanıcı var mı kontrol ediyorz
