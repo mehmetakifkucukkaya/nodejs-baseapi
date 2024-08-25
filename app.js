@@ -8,6 +8,7 @@ const errorHandlerMiddleware = require('./src/middleware/error_handler');
 const cors = require('cors');
 const corsOptions = require('./src/helpers/cors_options');
 const router = require('./src/routers');
+const mongoSanitize = require('express-mongo-sanitize');
 
 app.get('/', (req, res) => {
   res.json({
@@ -24,6 +25,13 @@ app.use(
 
 //* Cors
 app.use(cors(corsOptions));
+
+//* MongoDb Injection
+app.use(
+  mongoSanitize({
+    replaceWith: '_',
+  })
+);
 
 app.use('/api', router);
 
