@@ -23,6 +23,17 @@ const userScheme = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    //* Şifremi unuttum işlemi için
+    reset: {
+      code: {
+        type: String,
+        default: null,
+      },
+      expire: {
+        type: Date,
+        default: null,
+      },
+    },
   },
   { collection: 'users', timestamps: true }
 );

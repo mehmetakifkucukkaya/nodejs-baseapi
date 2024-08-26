@@ -2,7 +2,10 @@ const UserModel = require('../models/user_model');
 const bcrypt = require('bcrypt');
 const APIError = require('../utils/errors');
 const Response = require('../utils/response');
+const crypto = require('crypto');
 const { createToken } = require('../middleware/auth');
+const sendMail = require('../utils/send_mail');
+const moment = require('moment');
 
 const login = async (req, res) => {
   console.log('/login');
@@ -62,8 +65,43 @@ const me = async (req, res) => {
   return new Response(req.user).succes(res);
 };
 
+const forgetPassword = async (req, res) => {
+  const { email } = req.body;
+
+  const userInfo = await UserModel.findOne({ email }).select(
+    'name lastName email'
+  );
+
+  if (!userInfo) return new APIError('Kullanıcı bulunamadı', 400);
+
+  const resetCode = crypto.randomBytes(3).toString('hex');
+
+  await sendMail({
+    from: 'base.api.proje@gmail.com',
+    to: userInfo.email,
+    subject: 'Şifre Sıfırlama',
+    text: `Merhaba ${userInfo.name} ${userInfo.lastName}, şifrenizi sıfırlamak için aşağıdaki kodu kullanabilirsiniz: ${resetCode}`,
+  });
+
+  await user.updateOne(
+    { email },
+    {
+      reset: {
+        code: resetCode,
+        expire: moment.add(15, 'minute').format('YYYY-MM-DD HH:mm:ss'),
+      },
+    }
+  );
+
+  return new Response(
+    true,
+    'Şifre sıfırlama kodu mail adresinize gönderildi'
+  ).succes(res);
+};
+
 module.exports = {
   login,
   register,
   me,
+  forgetPassword,
 };
