@@ -10,6 +10,7 @@ const corsOptions = require('./src/helpers/cors_options');
 const router = require('./src/routers');
 const mongoSanitize = require('express-mongo-sanitize');
 const path = require('path');
+const apiLimiter = require('./src/middleware/rate_limit');
 
 app.get('/', (req, res) => {
   res.json({
@@ -24,11 +25,15 @@ app.use(
   express.urlencoded({ limit: '50mb', extended: true, parameterLimit: 50000 })
 );
 
+//* Resim dosyası yükleme
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(__dirname));
 
 //* Cors
 app.use(cors(corsOptions));
+
+//* Rate Limit
+app.use('/api', apiLimiter);
 
 //* MongoDb Injection
 app.use(
