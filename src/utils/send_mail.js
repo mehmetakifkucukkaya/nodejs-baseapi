@@ -1,5 +1,5 @@
 const nodemailer = require('nodemailer');
-
+const APIError = require('../utils/errors');
 const sendMail = async (mailOptions) => {
   const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
@@ -16,8 +16,7 @@ const sendMail = async (mailOptions) => {
     console.log('Mail başarıyla gönderildi:', info);
     return true;
   } catch (err) {
-    console.log('Mail Gönderilemedi!', err);
-    return false;
+    throw new APIError('Mail gönderilirken bir hata oluştu', 500);
   }
 };
 

@@ -64,7 +64,44 @@ const tokenCheck = async (req, res, next) => {
   }
 };
 
+const createTempToken = async (userId, email) => {
+  const payload = {
+    sub: userId,
+    email,
+  };
+
+  const token = await jwt.sign(payload, process.env.JWT_TEMP_KEY, {
+    algorithm: 'HS512',
+    expiresIn: process.env.JWT_TEMP_EXPIRES_IN,
+  });
+
+  return 'Bearer ' + token;
+};
+
+const decodeTempToken = async (tempToken) => {
+  const token = tempToken.split(' ')[1];
+  let userInfo;
+
+  await jwt.verify(token, process.env.JWT_TEMP_KEY, async (err, decoded) => {
+    if (err) {
+      throw new APIError('Geçersiz Token', 401);
+    }
+
+    userInfo = await userModel
+      .findById(decoded.sub)
+      .select('_id name lastName email');
+
+    if (!userInfo) {
+      throw new APIError('Geçersiz Token', 401);
+    }
+  });
+
+  return userInfo;
+};
+
 module.exports = {
   createToken,
   tokenCheck,
+  createTempToken,
+  decodeTempToken,
 };

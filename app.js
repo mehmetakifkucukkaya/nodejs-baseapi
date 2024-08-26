@@ -11,6 +11,8 @@ const router = require('./src/routers');
 const mongoSanitize = require('express-mongo-sanitize');
 const path = require('path');
 const apiLimiter = require('./src/middleware/rate_limit');
+const moment = require('moment-timezone');
+moment.tz.setDefault('Europe/Istanbul');
 
 app.get('/', (req, res) => {
   res.json({
